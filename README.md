@@ -1,2 +1,3 @@
-# slack-redmine-bot
-Redmine issue name expender for Slack
+# Redmine bot for Slack
+
+Redmine issue name expender for Slack.
