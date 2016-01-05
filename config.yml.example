@@ -1,0 +1,5 @@
+redmine:
+    url: http://redmine.site.com
+    api_key: 123jh1g2j3gj1gj234g23j4hg1j23hg
+slack:
+    token: xoxb-44564564563-353j4g5jh34j53hg45jk3h4g5kj3
