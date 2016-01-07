@@ -1,5 +1,9 @@
 redmine:
     url: http://redmine.site.com
     api_key: 123jh1g2j3gj1gj234g23j4hg1j23hg
+    # ids array of closed statuses
+    closed_statuses: [5, 6]
+    # ids array of high priorities
+    high_priorities: [5, 7]
 slack:
     token: xoxb-44564564563-353j4g5jh34j53hg45jk3h4g5kj3
