@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/patrickmn/go-cache"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -12,6 +13,10 @@ import (
 const (
 	IssueUrl     = "%s/issues/%d"
 	IssueUrlJson = "%s/issues/%s.json"
+)
+
+var (
+	c *cache.Cache
 )
 
 type Client struct {
@@ -43,6 +48,10 @@ type Issue struct {
 type Dictionary struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+func init() {
+	c = cache.New(5*time.Minute, 30*time.Second)
 }
 
 func New(url string, apiKey string, statuses []int, priorities []int) *Client {
@@ -88,6 +97,11 @@ func (r *Client) IssueInHighPriority(issue *Issue) bool {
 }
 
 func (r *Client) GetIssue(number string) (*Issue, error) {
+	// load from cache
+	if x, found := c.Get(number); found {
+		return x.(*Issue), nil
+	}
+
 	var issue Issue
 
 	req, err := http.NewRequest("GET", fmt.Sprintf(IssueUrlJson, r.Url, number), nil)
@@ -118,6 +132,8 @@ func (r *Client) GetIssue(number string) (*Issue, error) {
 		return &issue, err
 	} else {
 		issue = *iw.Issue
+		// save to cache
+		c.Set(number, &issue, cache.DefaultExpiration)
 	}
 
 	return &issue, nil
