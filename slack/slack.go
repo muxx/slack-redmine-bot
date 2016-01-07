@@ -86,19 +86,18 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string) (err error) {
 		title = fmt.Sprintf("#%d: %s", issue.Id, issue.Subject)
 	}
 
-	color := "warning"
-	if s.redmine.IssueIsClosed(issue) {
-		color = "good"
-	} else if s.redmine.IssueInHighPriority(issue) {
-		color = "danger"
-	}
-
 	attachment := slackapi.Attachment{
 		Title:     title,
-		Color:     color,
 		TitleLink: s.redmine.GetIssueUrl(issue),
 		Fields:    fields,
 	}
+
+	if s.redmine.IssueIsClosed(issue) {
+		attachment.Color = "good"
+	} else if s.redmine.IssueInHighPriority(issue) {
+		attachment.Color = "danger"
+	}
+
 	params.Attachments = []slackapi.Attachment{attachment}
 
 	_, _, err = s.slack.PostMessage(channel, "", params)
