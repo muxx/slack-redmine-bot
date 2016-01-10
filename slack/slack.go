@@ -25,11 +25,11 @@ func New(r *redmine.Client, token string) *Client {
 	p := fmt.Sprintf(issuePattern, regexp.QuoteMeta(r.Url))
 	issuePattern := regexp.MustCompile(p)
 
-	return &Client{
-		slackapi.New(token),
-		r,
-		issuePattern,
-	}
+	// Slack API client
+	api := slackapi.New(token)
+	api.SetDebug(true)
+
+	return &Client{api, r, issuePattern}
 }
 
 func (s *Client) sendMessage(issue *redmine.Issue, channel string) (err error) {
