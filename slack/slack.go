@@ -32,7 +32,7 @@ func New(r *redmine.Client, token string) *Client {
 	return &Client{api, r, issuePattern}
 }
 
-func (s *Client) sendMessage(issue *redmine.Issue, channel string) (err error) {
+func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimestamp string) (err error) {
 	params := slackapi.PostMessageParameters{}
 	params.IconURL = botLogo
 	params.Username = "Redmine Bot"
@@ -100,6 +100,10 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string) (err error) {
 
 	params.Attachments = []slackapi.Attachment{attachment}
 
+	if threadTimestamp != "" {
+		params.ThreadTimestamp = threadTimestamp
+	}
+
 	_, _, err = s.slack.PostMessage(channel, "", params)
 
 	return err
@@ -117,7 +121,8 @@ func (s *Client) processEvent(ev *slackapi.MessageEvent, wg sync.WaitGroup) {
 			continue
 		}
 
-		err = s.sendMessage(issue, ev.Channel)
+		err = s.sendMessage(issue, ev.Channel, ev.ThreadTimestamp)
+
 		if err != nil {
 			fmt.Printf("Error of message sending. %s\n", err)
 		}
@@ -136,7 +141,7 @@ SlackLoop:
 		case msg := <-rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slackapi.MessageEvent:
-				if ev.SubType != "bot_message" && ev.SubType != "message_deleted" {
+				if ev.SubType == "" || ev.SubType == "file_comment" || ev.SubType == "file_mention" {
 					wg.Add(1)
 					go s.processEvent(ev, wg)
 				}
