@@ -8,7 +8,7 @@ Redmine issue name expender for Slack.
 make build
 ```
 
-The binary will be installed at `./bin/slack-redmine-bot` folder.
+The binary will be installed at `./bin/slack-redmine-bot`.
 
 ## Config and run
 
