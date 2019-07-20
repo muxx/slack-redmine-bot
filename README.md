@@ -1,6 +1,14 @@
 # Redmine bot for Slack
 
-Redmine issue name expender for Slack.
+Redmine issue name expander for Slack. 
+
+Bot parses the issue numbers (`#54321`) and the links to issues (`http://redmine.host.com/issues/54321`) and displays the task name with attributes: 
+* project
+* tracker
+* author
+* assigned to
+* category
+* version
 
 ![Example](/static/screenshot.png?raw=true)
 
@@ -25,12 +33,4 @@ Create `config.yml` from example `config.yml.example`.
 ```
 docker pull muxx/slack-redmine-bot
 docker run --rm -it -v /path/to/config.yml:/config.yml muxx/slack-redmine-bot:latest
-```
-
-## Config and run
-
-Copy and fill config file `config.yml.example`
-```
-cp config.yml.example config.yml
-make run
 ```
