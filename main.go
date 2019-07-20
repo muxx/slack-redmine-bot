@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/muxx/slack-redmine-bot/redmine"
-	"github.com/muxx/slack-redmine-bot/slack"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"os"
+	"slack-redmine-bot/redmine"
+	"slack-redmine-bot/slack"
 )
 
 func configInit() {

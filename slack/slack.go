@@ -3,9 +3,9 @@ package slack
 import (
 	"errors"
 	"fmt"
-	"github.com/muxx/slack-redmine-bot/redmine"
 	slackapi "github.com/nlopes/slack"
 	"regexp"
+	"slack-redmine-bot/redmine"
 	"sync"
 )
 
@@ -26,19 +26,26 @@ func New(r *redmine.Client, token string) *Client {
 	issuePattern := regexp.MustCompile(p)
 
 	// Slack API client
-	api := slackapi.New(token)
-	api.SetDebug(true)
+	api := slackapi.New(token, slackapi.OptionDebug(true))
 
 	return &Client{api, r, issuePattern}
 }
 
 func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimestamp string) (err error) {
-	params := slackapi.PostMessageParameters{}
-	params.IconURL = botLogo
-	params.Username = "Redmine Bot"
+	var options []slackapi.MsgOption
+
+	params := slackapi.PostMessageParameters{
+		IconURL:  botLogo,
+		Username: "Redmine Bot",
+	}
+	if threadTimestamp != "" {
+		params.ThreadTimestamp = threadTimestamp
+	}
+
+	options = append(options, slackapi.MsgOptionPostMessageParameters(params))
 
 	fields := make([]slackapi.AttachmentField, 6)
-	var idx int = 3
+	var idx = 3
 
 	fields[0] = slackapi.AttachmentField{
 		Title: "Project",
@@ -98,13 +105,9 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimesta
 		attachment.Color = "danger"
 	}
 
-	params.Attachments = []slackapi.Attachment{attachment}
+	options = append(options, slackapi.MsgOptionAttachments(attachment))
 
-	if threadTimestamp != "" {
-		params.ThreadTimestamp = threadTimestamp
-	}
-
-	_, _, err = s.slack.PostMessage(channel, "", params)
+	_, _, err = s.slack.PostMessage(channel, options...)
 
 	return err
 }
