@@ -2,6 +2,8 @@
 
 Redmine issue name expender for Slack.
 
+![Example](/static/screenshot.png?raw=true)
+
 ## Run
 
 ### From sources
