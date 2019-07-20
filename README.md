@@ -2,7 +2,7 @@
 
 Redmine issue name expander for Slack. 
 
-Bot parses the issue numbers (`#54321`), the links to issues (`http://redmine.host.com/issues/54321`) and displays the task name with attributes: 
+Bot parses the issue numbers (`#54321`), the links to issue (`http://redmine.host.com/issues/54321`) and displays the issue name with attributes: 
 * project
 * tracker
 * author
