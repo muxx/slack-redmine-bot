@@ -32,8 +32,7 @@ func New(r *redmine.Client, token string) *Client {
 }
 
 func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimestamp string) (err error) {
-	var options []slackapi.MsgOption
-
+	// params
 	params := slackapi.PostMessageParameters{
 		IconURL:  botLogo,
 		Username: "Redmine Bot",
@@ -42,72 +41,47 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimesta
 		params.ThreadTimestamp = threadTimestamp
 	}
 
-	options = append(options, slackapi.MsgOptionPostMessageParameters(params))
-
-	fields := make([]slackapi.AttachmentField, 6)
-	var idx = 3
-
-	fields[0] = slackapi.AttachmentField{
-		Title: "Project",
-		Value: issue.Project.Name,
-		Short: true,
-	}
-	fields[1] = slackapi.AttachmentField{
-		Title: "Status",
-		Value: issue.Status.Name,
-		Short: true,
-	}
-	fields[2] = slackapi.AttachmentField{
-		Title: "Author",
-		Value: issue.Author.Name,
-		Short: true,
-	}
-	if issue.AssignedTo != nil {
-		fields[idx] = slackapi.AttachmentField{
-			Title: "Assigned To",
-			Value: issue.AssignedTo.Name,
-			Short: true,
-		}
-		idx += 1
-	}
-	if issue.Category != nil {
-		fields[idx] = slackapi.AttachmentField{
-			Title: "Category",
-			Value: issue.Category.Name,
-			Short: true,
-		}
-		idx += 1
-	}
-	if issue.Version != nil {
-		fields[idx] = slackapi.AttachmentField{
-			Title: "Version",
-			Value: issue.Version.Name,
-			Short: true,
-		}
-	}
-
+	// title
 	var title string
 	if issue.Tracker != nil {
 		title = fmt.Sprintf("%s #%d: %s", issue.Tracker.Name, issue.Id, issue.Subject)
 	} else {
 		title = fmt.Sprintf("#%d: %s", issue.Id, issue.Subject)
 	}
+	titleText := slackapi.NewTextBlockObject(
+		"mrkdwn",
+		"*<"+s.redmine.GetIssueUrl(issue)+"|"+title+">*",
+		false,
+		false,
+	)
+	titleSection := slackapi.NewSectionBlock(titleText, nil, nil)
 
-	attachment := slackapi.Attachment{
-		Title:     title,
-		TitleLink: s.redmine.GetIssueUrl(issue),
-		Fields:    fields,
+	// context
+	elements := make([]slackapi.MixedElement, 5)
+	var idx = 2
+
+	elements[0] = slackapi.NewTextBlockObject("mrkdwn", "*Project:* "+issue.Project.Name, false, false)
+	elements[1] = slackapi.NewTextBlockObject("mrkdwn", "*Status:* "+issue.Status.Name, false, false)
+	if issue.Category != nil {
+		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Category:* "+issue.Category.Name, false, false)
+		idx += 1
+	}
+	if issue.Version != nil {
+		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Version:* "+issue.Version.Name, false, false)
+		idx += 1
+	}
+	if issue.AssignedTo != nil {
+		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Assigned To:* "+issue.AssignedTo.Name, false, false)
 	}
 
-	if s.redmine.IssueIsClosed(issue) {
-		attachment.Color = "good"
-	} else if s.redmine.IssueInHighPriority(issue) {
-		attachment.Color = "danger"
-	}
+	contextSection := slackapi.NewContextBlock("", elements...)
 
-	options = append(options, slackapi.MsgOptionAttachments(attachment))
-
-	_, _, err = s.slack.PostMessage(channel, options...)
+	// send
+	_, _, err = s.slack.PostMessage(
+		channel,
+		slackapi.MsgOptionPostMessageParameters(params),
+		slackapi.MsgOptionBlocks(titleSection, contextSection),
+	)
 
 	return err
 }
