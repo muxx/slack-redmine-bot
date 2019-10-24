@@ -57,21 +57,22 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimesta
 	titleSection := slackapi.NewSectionBlock(titleText, nil, nil)
 
 	// context
-	elements := make([]slackapi.MixedElement, 5)
-	var idx = 2
+	elements := []slackapi.MixedElement{
+		slackapi.NewTextBlockObject("mrkdwn", "*Project:* "+issue.Project.Name, false, false),
+		slackapi.NewTextBlockObject("mrkdwn", "*Status:* "+issue.Status.Name, false, false),
+	}
 
-	elements[0] = slackapi.NewTextBlockObject("mrkdwn", "*Project:* "+issue.Project.Name, false, false)
-	elements[1] = slackapi.NewTextBlockObject("mrkdwn", "*Status:* "+issue.Status.Name, false, false)
 	if issue.Category != nil {
-		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Category:* "+issue.Category.Name, false, false)
-		idx += 1
+		elements = append(elements, slackapi.NewTextBlockObject("mrkdwn", "*Category:* "+issue.Category.Name, false, false))
 	}
 	if issue.Version != nil {
-		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Version:* "+issue.Version.Name, false, false)
-		idx += 1
+		elements = append(elements, slackapi.NewTextBlockObject("mrkdwn", "*Version:* "+issue.Version.Name, false, false))
 	}
 	if issue.AssignedTo != nil {
-		elements[idx] = slackapi.NewTextBlockObject("mrkdwn", "*Assigned To:* "+issue.AssignedTo.Name, false, false)
+		elements = append(elements, slackapi.NewTextBlockObject("mrkdwn", "*Assigned To:* "+issue.AssignedTo.Name, false, false))
+	}
+	if s.redmine.IssueInHighPriority(issue) {
+		elements = append(elements, slackapi.NewTextBlockObject("mrkdwn", "*Priority:* "+issue.Priority.Name, false, false))
 	}
 
 	contextSection := slackapi.NewContextBlock("", elements...)
