@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	botLogo      = "http://139810.selcdn.com/download/redmine_fluid_icon.png"
+	botLogo      = "http://download.retailcrm.pro/redmine_fluid_icon.png"
 	issuePattern = "(#|%s\\/issues\\/)(\\d+)"
 )
 
