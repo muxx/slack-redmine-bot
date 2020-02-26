@@ -90,9 +90,18 @@ func (s *Client) sendMessage(issue *redmine.Issue, channel string, threadTimesta
 func (s *Client) processEvent(ev *slackapi.MessageEvent, wg sync.WaitGroup) {
 	defer wg.Done()
 
+	processed := make(map[string]bool)
 	matches := s.pattern.FindAllStringSubmatch(ev.Text, -1)
+
 	for _, v := range matches {
-		issue, err := s.redmine.GetIssue(v[2])
+		issueNumber := v[2]
+
+		if _, ok := processed[issueNumber]; ok {
+			continue
+		}
+
+		issue, err := s.redmine.GetIssue(issueNumber)
+		processed[issueNumber] = true
 
 		if err != nil {
 			fmt.Printf("Error of the issue fetching. %s\n", err)
